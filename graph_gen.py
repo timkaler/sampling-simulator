@@ -28,21 +28,22 @@ def compute_max_path(parent):
   global sample_array
   if len(edges[parent]) == 0:
     if parent in sample_array:
-      return (1,1)
+      return 1
     else:
-      return (0,0)
+      return 0
 
-  max_path = 1
+  max_path = 0
   count = 0
   for v in edges[parent]:
     vspan = compute_max_path(v)
-    if vspan[0]*(1/0.01) > max_path:
-      max_path = vspan[0]*(1/0.01)
-  max_path = max_path - math.sqrt(max_path/2)
+    if vspan > max_path:
+      max_path = vspan
+
+  max_path = max_path
   if v in sample_array:
-    return (max_path+1, count+1)
+    return max_path+1
   else:
-    return (max_path, count)
+    return max_path
 
 
 
@@ -62,7 +63,7 @@ sample_dag(vertices, p)
 #print vertices
 #print edges
 
-print compute_max_path(0)[0]*(1/p)
+print compute_max_path(0)*(1/p)
 
-print len(vertices)*p/compute_max_path(0)[0]
+print len(vertices)*p/compute_max_path(0)
 
