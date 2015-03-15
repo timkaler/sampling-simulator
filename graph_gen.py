@@ -1,8 +1,9 @@
+#!/usr/bin/python
 import random
-import math
+import sys
+
 vertices = []
 edges = dict()
-
 
 vertex_id = 0
 
@@ -33,7 +34,6 @@ def compute_max_path(parent):
       return 0
 
   max_path = 0
-  count = 0
   for v in edges[parent]:
     vspan = compute_max_path(v)
     if vspan > max_path:
@@ -45,25 +45,27 @@ def compute_max_path(parent):
   else:
     return max_path
 
-
-
 def sample_dag(vertices, p):
   global sample_array
   sampled = random.sample(vertices, int(p*len(vertices)))
   for x in sampled:
     sample_array[x] = True
 
-generate_tree(20, -1)
+def run(p):
+    generate_tree(20, -1)
+    sample_dag(vertices, p)
 
-p = 0.1
+    work = len(vertices)
+    span = compute_max_path(0)*(1/p)
+    parallelism = work / span
+    print "Work: %d" % work 
+    print "Span estimate: %.2f" % span
+    print "Parallelism estimate: %.2f" %  parallelism
 
-sample_dag(vertices, p)
+if __name__ == "__main__":
+    p = 0.1
+    if len(sys.argv) == 2:
+        p = float(sys.argv[1])
+    run(p)
 
-
-#print vertices
-#print edges
-
-print compute_max_path(0)*(1/p)
-
-print len(vertices)*p/compute_max_path(0)
 
