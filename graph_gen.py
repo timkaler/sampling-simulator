@@ -23,6 +23,21 @@ def generate_tree(depth, parent):
 
   generate_tree(depth-1, v)
   generate_tree(depth-1, v) 
+
+def generate_tree_parallel_radix(sq_root_n, parent, is_parent=False):
+    """
+    Construct a dag representative of one for parallel radix sort.
+    """
+    if sq_root_n == 0:
+        return
+    v = checkout_vertex()
+    edges[v] = []
+    if is_parent:
+        for i in range(sq_root_n):
+            generate_tree_parallel_radix(sq_root_n, v)
+    else:
+        edges[parent].append(v)
+        generate_tree_parallel_radix(sq_root_n - 1, v)
   
 sample_array = dict()
 def compute_max_path(parent):
@@ -52,7 +67,8 @@ def sample_dag(vertices, p):
     sample_array[x] = True
 
 def run(p):
-    generate_tree(20, -1)
+    #generate_tree(20, -1)
+    generate_tree_parallel_radix(300, -1, True)
     sample_dag(vertices, p)
 
     work = len(vertices)
