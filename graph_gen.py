@@ -1,8 +1,9 @@
+#!/usr/bin/python
 import random
-import math
+import sys
+
 vertices = []
 edges = dict()
-
 
 vertex_id = 0
 
@@ -56,6 +57,21 @@ def generate_tree(depth, parent):
 
   generate_tree(depth-1, v)
   generate_tree(depth-1, v) 
+
+def generate_tree_parallel_radix(sq_root_n, parent, is_parent=False):
+    """
+    Construct a dag representative of one for parallel radix sort.
+    """
+    if sq_root_n == 0:
+        return
+    v = checkout_vertex()
+    edges[v] = []
+    if is_parent:
+        for i in range(sq_root_n):
+            generate_tree_parallel_radix(sq_root_n, v)
+    else:
+        edges[parent].append(v)
+        generate_tree_parallel_radix(sq_root_n - 1, v)
   
 sample_array = dict()
 visited_array = dict()
@@ -77,8 +93,12 @@ def compute_max_path(parent):
       else:
         return (0,0)
 
+<<<<<<< HEAD
   max_path = (0,0)
   count = 0
+=======
+  max_path = 0
+>>>>>>> a6f64b63a6b18453058cbc8b08faf84995e9822c
   for v in edges[parent]:
     vspan = compute_max_path(v)
     visited_array[v] = vspan
@@ -96,9 +116,12 @@ def compute_max_path(parent):
     else:
       return max_path 
 
+<<<<<<< HEAD
 
 sample_array2 = dict()
 
+=======
+>>>>>>> a6f64b63a6b18453058cbc8b08faf84995e9822c
 def sample_dag(vertices, p):
   global sample_array
   global sample_array2
@@ -107,6 +130,7 @@ def sample_dag(vertices, p):
   for x in sampled:
     sample_array[x] = True
 
+<<<<<<< HEAD
   sampled = random.sample(vertices, int(p*len(vertices)))
   for x in sampled:
     sample_array2[x] = True
@@ -149,4 +173,24 @@ span = compute_max_path(root)
 print "the span is " + str(span[0] * (1/p)) +" and other is " + str(span[1] * (1/p))
 
 print str(len(vertices)*p/span[1])
+=======
+def run(p):
+    #generate_tree(20, -1)
+    generate_tree_parallel_radix(300, -1, True)
+    sample_dag(vertices, p)
+
+    work = len(vertices)
+    span = compute_max_path(0)*(1/p)
+    parallelism = work / span
+    print "Work: %d" % work 
+    print "Span estimate: %.2f" % span
+    print "Parallelism estimate: %.2f" %  parallelism
+
+if __name__ == "__main__":
+    p = 0.1
+    if len(sys.argv) == 2:
+        p = float(sys.argv[1])
+    run(p)
+
+>>>>>>> a6f64b63a6b18453058cbc8b08faf84995e9822c
 
