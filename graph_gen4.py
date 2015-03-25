@@ -1,6 +1,7 @@
 import random
 import math
 import sys
+import time
 vertices = []
 edges = dict()
 sys.setrecursionlimit(100000)
@@ -60,25 +61,123 @@ def generate_tree(depth, parent):
   
 sample_array = dict()
 visited_array = dict()
-def compute_max_path(parent):
+stack = list()
+in_stack = dict()
+
+def compute_max_path_stack_version(root):
+  global stack
+  global in_stack
+  stack.append(root)
+  for v in vertices:
+    in_stack[v] = False
+  in_stack[root] = True
+  while len(stack) > 0:
+    parent = stack[-1]
+    #print parent
+    #time.sleep(0.1)
+    ret = compute_max_path_stack(parent)
+    if ret != None:
+      stack.pop()
+      in_stack[parent] = False
+    
+
+def compute_max_path_stack(parent):
   global sample_array
+  global stack
 
   if parent in visited_array:
     return visited_array[parent] 
 
   if len(edges[parent]) == 0:
+    c1 = 0
+    c2 = 0
+    c3 = 0
+    c4 = 0
     if parent in sample_array:
-      if parent in sample_array2:
-        return (1,1)
-      else:
-        return (1,0)
-    else:
-      if parent in sample_array2:
-        return (0,1)
-      else:
-        return (0,0)
+      c1 = 1
+    if parent in sample_array2:
+      c2 = 1
+    if parent in sample_array3:
+      c3 = 1
+    if parent in sample_array4:
+      c4 = 1
+    visited_array[parent] = (c1,c2,c3,c4)
+    return (c1,c2,c3,c4)
 
-  max_path = (0,0)
+  max_path = (0,0,0,0)
+  count = 0
+  max_value = 0
+  for v in edges[parent]:
+    if v not in visited_array:
+      if not in_stack[v]:
+        in_stack[v] = True
+        stack.append(v)
+        #print "appending " + str(v)
+      return None
+
+    vspan = compute_max_path(v)
+    visited_array[v] = vspan
+    #value = math.pow((vspan[0]+1)*(vspan[1]+1)*(min(vspan[0],vspan[1])+1), 3)
+   
+    #if vspan[0] < 2:
+    #  value = vspan[0]
+    #else: 
+    #value=max(vspan[0],vspan[1]) - abs(vspan[0]-vspan[1])/2
+    value=vspan[0]
+    #value = vspan[0]
+    #if vspan[0] > max_path[0]:
+    if value > max_value:
+      max_path = vspan
+      max_value=value
+
+  # (two) now four choices approach.
+  if max_path[0] > (max_path[1]+1):
+    max_path=(max_path[1],max_path[0], max_path[2], max_path[3])
+  if max_path[0] > (max_path[2]+1):
+    max_path=(max_path[2],max_path[1], max_path[0], max_path[3])
+  if max_path[0] > (max_path[3]+1):
+    max_path=(max_path[3],max_path[1], max_path[2], max_path[0])
+
+  c1 = 0
+  c2 = 0
+  c3 = 0
+  c4 = 0
+  if parent in sample_array:
+    c1 = 1
+  if parent in sample_array2:
+    c2 = 1
+  if parent in sample_array3:
+    c3 = 1
+  if parent in sample_array4:
+    c4 = 1 
+  visited_array[parent] = (max_path[0]+c1, max_path[1]+c2, max_path[2] + c3, max_path[3] + c4)
+  return (max_path[0]+c1, max_path[1]+c2, max_path[2] + c3, max_path[3] + c4)
+
+def compute_max_path(parent):
+  global sample_array
+  global visited_array
+  if parent in visited_array:
+    return visited_array[parent] 
+
+  print "danger danger!"
+
+  if len(edges[parent]) == 0:
+    c1 = 0
+    c2 = 0
+    c3 = 0
+    c4 = 0
+    if parent in sample_array:
+      c1 = 1
+    if parent in sample_array2:
+      c2 = 1
+    if parent in sample_array3:
+      c3 = 1
+    if parent in sample_array4:
+      c4 = 1
+    visited_array[parent] = (c1,c2,c3,c4) 
+    return (c1,c2,c3,c4)
+
+  max_path = (0,0,0,0)
   count = 0
   max_value = 0
   for v in edges[parent]:
@@ -97,27 +196,38 @@ def compute_max_path(parent):
       max_path = vspan
       max_value=value
 
-  # two choices approach.
+  # (two) now four choices approach.
   if max_path[0] > (max_path[1]+1):
-    max_path=(max_path[1],max_path[0])
+    max_path=(max_path[1],max_path[0], max_path[2], max_path[3])
+  if max_path[0] > (max_path[2]+1):
+    max_path=(max_path[2],max_path[1], max_path[0], max_path[3])
+  if max_path[0] > (max_path[3]+1):
+    max_path=(max_path[3],max_path[1], max_path[2], max_path[0])
 
-  if v in sample_array:
-    if v in sample_array2:
-      return (max_path[0]+1, max_path[1]+1)
-    else:
-      return (max_path[0]+1, max_path[1])
-  else:
-    if v in sample_array2:
-      return (max_path[0], max_path[1]+1)
-    else:
-      return max_path 
-
+  c1 = 0
+  c2 = 0
+  c3 = 0
+  c4 = 0
+  if parent in sample_array:
+    c1 = 1
+  if parent in sample_array2:
+    c2 = 1
+  if parent in sample_array3:
+    c3 = 1
+  if parent in sample_array4:
+    c4 = 1
+  visited_array[parent] = (max_path[0]+c1, max_path[1]+c2, max_path[2] + c3, max_path[3] + c4)
+  return (max_path[0]+c1, max_path[1]+c2, max_path[2] + c3, max_path[3] + c4)
 
 sample_array2 = dict()
+sample_array3 = dict()
+sample_array4 = dict()
 
 def sample_dag(vertices, p):
   global sample_array
   global sample_array2
+  global sample_array3
+  global sample_array4
 
   sampled = random.sample(vertices, int(p*len(vertices)))
   for x in sampled:
@@ -126,6 +236,16 @@ def sample_dag(vertices, p):
   sampled = random.sample(vertices, int(p*len(vertices)))
   for x in sampled:
     sample_array2[x] = True
+
+  sampled = random.sample(vertices, int(p*len(vertices)))
+  for x in sampled:
+    sample_array3[x] = True
+
+  sampled = random.sample(vertices, int(p*len(vertices)))
+  for x in sampled:
+    sample_array4[x] = True
+
+
 
 def generate_challenge(k, n):
 
@@ -233,17 +353,17 @@ def compute_pedigrees(pmap, parent, pedigree, real_parent):
       compute_pedigrees(pmap, v, list(pmap[parent]), parent)
   
 
-root = generate_charles_example(3000,6)
+#root = generate_charles_example(3000,6)
 
-root = generate_challenge(600,6)
+root = generate_challenge(6000,6)
+#root = generate_challenge(1,2)
 
 #p = 1.0/(2**12)
-#p = math.pow(len(vertices), 1.0/2)/len(vertices)
-p = 200.0 / len(vertices)
+p = 400.0/len(vertices)
 #p=1.0
-#print p
+#print p*len(vertices)
 #p = 1.0/16
-#p = 1.0 
+p = 1.0 
 
 def sample(pmap, vertices):
   v1 = random.randint(0,len(vertices)-1)
@@ -289,7 +409,8 @@ sample_dag(vertices, p)
 #print edges
 
 deduplicate_edges(vertices)
-span = compute_max_path(root)
+compute_max_path_stack_version(root)
+span = visited_array[root] 
 
 print "the span is " + str(span)
 print "the corrected span is " + str((span[0]*(1/p), span[1]*(1/p)))
@@ -303,7 +424,7 @@ pmap = dict()
 #sample(pmap, vertices)
 
 
-#jprint edges
+#print edges
 #print pmap
 #exit()
 #count = 1
