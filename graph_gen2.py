@@ -128,10 +128,78 @@ def generate_charles_example(k, n):
 
 #generate_tree(15, -1)
 
-root = generate_charles_example(50,8)
+in_edges = dict()
+def deduplicate_edges(vertices):
+  global edges
+  global in_edges
+  new_edges = dict()
+  for v in vertices:
+    new_edges[v] = []
+  for v in vertices:
+    D = dict()
+    for e in edges[v]:
+      if e not in D:
+        new_edges[v].append(e)
+      D[e] = True
+  edges = new_edges
+  for v in vertices:
+    in_edges[v] = 0
 
-p = 0.016
-#p = 1 
+  for v in vertices:
+    for e in edges[v]:
+      in_edges[e] += 1
+       
+def compute_pedigrees(pmap, parent, pedigree, real_parent):
+  if parent in visited_array:
+    return
+  if in_edges[parent] > 1:
+    in_edges[parent] -= 3
+    return
+
+  # this is a join edge
+  if in_edges[parent] == -1:
+    #print "reduced length before " + str(pedigree)
+    #pmap[parent] = tuple(pedigree[:len(pedigree)-1])
+    pmap[parent] = tuple(pedigree[:len(pedigree)])
+    pmap[parent] = list(pmap[parent])
+    pmap[parent][len(pmap[parent])-1] = 3
+    pmap[parent] = pmap[parent] + [0]
+    pmap[parent] = tuple(pmap[parent]) 
+    #print "reduced length after " + str(pmap[parent])
+  else: 
+    pmap[parent] = tuple(pedigree)
+
+  visited_array[parent] = True
+  index = 0 
+  if len(edges[parent]) > 1:
+    for v in edges[parent]:
+      compute_pedigrees(pmap, v, list(pmap[parent]) + [index], parent)
+      index += 1
+  else:
+    for v in edges[parent]:
+      compute_pedigrees(pmap, v, list(pmap[parent]), parent)
+  
+
+root = generate_charles_example(3,3)
+
+#p = 0.1
+p = 1 
+
+def sample(pmap, vertices):
+  v1 = random.randint(0,len(vertices)-1)
+  v2 = random.randint(0,len(vertices)-1)
+  if v1 == v2:
+    return sample(pmap,vertices)
+  print str((v1,v2)) 
+  print pmap[v1]
+  print pmap[v2]
+  min_length = min(len(pmap[v1]), len(pmap[v2]))
+  for i in range(0,min_length):
+    if pmap[v1][i] != pmap[v2][i] and pmap[v1][i] != 3 and pmap[v2][i] != 3:
+      print "parallel"
+      return 0
+  print "serial"
+  return 1 
 
         
 delta = 1/math.sqrt(p)
@@ -141,12 +209,31 @@ print "delta is " + str(1/math.sqrt(p))
 sample_dag(vertices, p)
 
 
-print len(vertices)
+#print len(vertices)
 #print edges
 
-span = compute_max_path(root)
+#span = compute_max_path(root)
 
-print "the span is " + str(span[0] * (1/p)) +" and other is " + str(span[1] * (1/p))
+pmap = dict()
 
-print str(len(vertices)*p/span[1])
+deduplicate_edges(vertices)
+compute_pedigrees(pmap, root, [0], root)
+
+sample(pmap, vertices)
+
+
+#jprint edges
+#print pmap
+#exit()
+count = 1
+total = 5
+for i in range(0,total):
+  count+=sample(pmap, vertices)
+
+print total/(1.0*(count))
+print count
+print total
+#print "the span is " + str(span[0] * (1/p)) +" and other is " + str(span[1] * (1/p))
+##
+print str(len(vertices))
 
